@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>京东财富投资时钟 </title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --c-growth: #2196f3;
+            --c-inflation: #f44336;
+            --phase-1: rgba(76, 175, 80, 0.1);  /* 复苏 */
+            --phase-2: rgba(255, 152, 0, 0.1);  /* 过热 */
+            --phase-3: rgba(211, 47, 47, 0.1);  /* 滞胀 */
+            --phase-4: rgba(33, 150, 243, 0.1); /* 衰退 */
+        }
+
+        body {
+            font-family: 'Segoe UI', "Microsoft YaHei", sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 1200px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            overflow: hidden;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+
+        h1 { margin-top: 0; font-size: 1.5rem; text-align: center; }
+        .subtitle { text-align: center; color: #666; font-size: 0.9rem; margin-bottom: 30px; }
+
+        /* 图表区域 */
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            margin-bottom: 20px;
+            user-select: none;
+        }
+
+        /* 背景分区 (四列) */
+        .zones {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            z-index: 0;
+        }
+        .zone {
+            flex: 1;
+            height: 100%;
+            border-right: 1px dashed #ddd;
+            position: relative;
+            transition: background 0.3s;
+        }
+        .zone:last-child { border-right: none; }
+        
+        .zone-label {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #555;
+            background: rgba(255,255,255,0.8);
+            padding: 4px 10px;
+            border-radius: 20px;
+            z-index: 2;
+        }
+
+        /* SVG 曲线层 */
+        svg {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            overflow: visible;
+        }
+
+        /* 资产卡片 (悬浮在图表上) */
+        .asset-marker {
+            position: absolute;
+            background: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            z-index: 10;
+            transform: translate(-50%, -50%);
+            border-left: 4px solid #333;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .asset-marker:hover {
+            transform: translate(-50%, -60%) scale(1.1);
+            z-index: 20;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .asset-marker .stars { display: block; font-size: 0.7em; color: #ffc107; margin-top: 2px; }
+        
+        /* 颜色定义 */
+        .marker-recovery { border-color: #4caf50; }
+        .marker-overheat { border-color: #ff9800; }
+        .marker-stagflation { border-color: #d32f2f; }
+        .marker-recession { border-color: #1976d2; }
+
+        /* 底部图例 */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+
+        /* 详情弹窗 */
+        #detail-box {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f1f3f5;
+            border-radius: 12px;
+            display: none; /* 默认隐藏 */
+            border-left: 5px solid #333;
+            animation: fadeIn 0.3s;
+        }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(5px);} to { opacity:1; transform:translateY(0);} }
+
+        /* 产品推荐标签样式 */
+        .product-tag {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 4px 10px;
+            background-color: #e3f2fd;
+            color: #1565c0;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            border: 1px solid #bbdefb;
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <h1>京东财富投资时钟-资产轮动图谱</h1>
+    <div class="subtitle">蓝色代表经济增长(GDP) · 红色代表通货膨胀(CPI)</div>
+
+    <div class="chart-wrapper">
+        <!-- 1. 背景分区 -->
+        <div class="zones">
+            <div class="zone" style="background: var(--phase-1);">
+                <div class="zone-label">Ⅰ 复苏期</div>
+            </div>
+            <div class="zone" style="background: var(--phase-2);">
+                <div class="zone-label">Ⅱ 过热期</div>
+            </div>
+            <div class="zone" style="background: var(--phase-3);">
+                <div class="zone-label">Ⅲ 滞胀期</div>
+            </div>
+            <div class="zone" style="background: var(--phase-4);">
+                <div class="zone-label">Ⅳ 衰退期</div>
+            </div>
+        </div>
+
+        <!-- 2. 曲线 (SVG绘制) -->
+        <svg viewBox="0 0 1000 500" preserveAspectRatio="none">
+            <!-- 辅助中线 -->
+            <line x1="0" y1="250" x2="1000" y2="250" stroke="#ccc" stroke-width="1" stroke-dasharray="5,5" />
+            
+            <!-- GDP 曲线 (蓝色) -->
+            <path d="M0,350 C150,350 200,100 350,100 S 500,250 600,300 S 800,450 1000,450" 
+                  stroke="var(--c-growth)" stroke-width="4" fill="none" />
+            
+            <!-- CPI 曲线 (红色虚线) - 滞后于GDP -->
+            <path d="M0,400 C150,450 200,350 350,350 S 500,100 650,100 S 850,200 1000,300" 
+                  stroke="var(--c-inflation)" stroke-width="3" fill="none" stroke-dasharray="8,4" />
+
+            <!-- 文字标注曲线含义 -->
+            <text x="300" y="90" fill="var(--c-growth)" font-weight="bold" font-size="14">GDP 增长</text>
+            <text x="600" y="90" fill="var(--c-inflation)" font-weight="bold" font-size="14">CPI 通胀</text>
+        </svg>
+
+        <!-- 3. 资产路标 -->
+        
+        <!-- 复苏期 -->
+        <div class="asset-marker marker-recovery" style="left: 10%; top: 65%;" onclick="showDetail('Tech')">
+            科技成长<span class="stars">⭐⭐⭐⭐⭐</span>
+        </div>
+        <div class="asset-marker marker-recovery" style="left: 18%; top: 50%;" onclick="showDetail('HK')">
+            港股<span class="stars">⭐⭐⭐⭐⭐</span>
+        </div>
+        <div class="asset-marker marker-recovery" style="left: 15%; top: 75%;" onclick="showDetail('Convertible')">
+            可转债<span class="stars">⭐⭐⭐⭐</span>
+        </div>
+
+        <!-- 过热期 -->
+        <div class="asset-marker marker-overheat" style="left: 35%; top: 25%;" onclick="showDetail('Commodity')">
+            大宗商品<span class="stars">⭐⭐⭐⭐⭐</span>
+        </div>
+        <div class="asset-marker marker-overheat" style="left: 42%; top: 35%;" onclick="showDetail('Metal')">
+            有色权益<span class="stars">⭐⭐⭐⭐</span>
+        </div>
+        <div class="asset-marker marker-overheat" style="left: 30%; top: 85%;" onclick="showDetail('Cash')">
+            短债/现金<span class="stars">⭐⭐</span>
+        </div>
+
+        <!-- 滞胀期 -->
+        <!-- 修改点：left调整为53%，避免遮挡“CPI通胀”文字 -->
+        <div class="asset-marker marker-stagflation" style="left: 53%; top: 20%;" onclick="showDetail('Gold')">
+            黄金<span class="stars">⭐⭐⭐⭐⭐</span>
+        </div>
+         <div class="asset-marker marker-stagflation" style="left: 65%; top: 35%;" onclick="showDetail('QDII')">
+            美股QDII<span class="stars">⭐⭐⭐⭐⭐</span>
+        </div>
+        <div class="asset-marker marker-stagflation" style="left: 58%; top: 70%;" onclick="showDetail('CashStag')">
+            货币基金<span class="stars">⭐⭐⭐⭐⭐</span>
+        </div>
+        <div class="asset-marker marker-stagflation" style="left: 70%; top: 80%;" onclick="showDetail('Consumer')">
+            必需消费<span class="stars">⭐⭐⭐⭐</span>
+        </div>
+
+        <!-- 衰退期 -->
+        <div class="asset-marker marker-recession" style="left: 85%; top: 50%;" onclick="showDetail('Bond')">
+            30年国债<span class="stars">⭐⭐⭐⭐⭐</span>
+        </div>
+        <div class="asset-marker marker-recession" style="left: 90%; top: 65%;" onclick="showDetail('Div')">
+            红利低波<span class="stars">⭐⭐⭐</span>
+        </div>
+        <div class="asset-marker marker-recession" style="left: 80%; top: 75%;" onclick="showDetail('ShortBond')">
+            中短债<span class="stars">⭐⭐⭐⭐</span>
+        </div>
+
+    </div>
+
+    <div class="legend">
+        <div class="legend-item"><div class="dot" style="background:var(--c-growth)"></div> GDP增长率</div>
+        <div class="legend-item"><div class="dot" style="background:var(--c-inflation)"></div> CPI通胀率</div>
+        <span style="color:#ccc">|</span>
+        <div class="legend-item" style="color:#666">👆 点击图表上的卡片查看策略</div>
+    </div>
+
+    <!-- 底部详情栏 -->
+    <div id="detail-box">
+        <h3 id="d-title" style="margin:0 0 10px 0;">标题</h3>
+        <div id="d-desc" style="font-size:0.95rem; color:#555; line-height:1.6;">内容</div>
+    </div>
+</div>
+
+<script>
+    const details = {
+        'Tech': { t: "科技成长 (复苏期核心)", d: "【逻辑】在复苏期，GDP开始回升，利率通常维持低位。科技股作为长久期资产，估值扩张最快，且受益于经济增长预期。<br><span class='product-tag'>💡 储备产品：【基金】永盈科技驱动、广发科技动力等【证券】科技ETF等</span>" },
+        'HK': { t: "港股 (复苏期弹性)", d: "【逻辑】港股对中国基本面和美国流动性都非常敏感。复苏期外资回流，港股往往展现出比A股更大的向上弹性。<br><span class='product-tag'>💡 储备产品：【基金】南方港股通优势企业混合、易方达港股通成长混合【证券】港股ETF等</span>" },
+        'Convertible': { t: "可转债 (复苏初期)", d: "【逻辑】股市刚启动时，单纯持有股票风险较大。可转债'下有债底，上不封顶'，是复苏初期完美的过渡性资产。<br><span class='product-tag'>💡 储备产品：【基金】易方达兴利债券、华宝宝康债等</span>" },
+        
+        'Commodity': { t: "大宗商品/原油 (过热期王者)", d: "【逻辑】过热期经济全速运转，工厂开工率高，对原油、铜等原材料需求激增，导致价格飞涨，跑赢所有金融资产。<br><span class='product-tag'>💡 储备产品：【基金】南方原油（QDII-FOF）等【期货】大宗商品</span>" },
+        'Metal': { t: "有色金属", d: "【逻辑】资源类股票直接受益于商品涨价，且具有杠杆效应，业绩爆发力极强。<br><span class='product-tag'>💡 储备产品：【期货】白银有色等【基金】南方中证申万有色金属ETF【证券】有色ETF等<</span>" },
+        
+        // 修改点：增加了京东小金库的文案
+        'Cash': { t: "防守型现金/短债", d: "【逻辑】过热期央行开始加息，债券价格下跌，股票波动加剧，持有现金或短债等待机会。<br><span class='product-tag'>💡 储备产品：【基金】天弘同业存单、易方达超短债等【理财保险】小金保</span>" },
+
+        'Gold': { t: "黄金 (滞胀期避风港)", d: "【逻辑】当经济停滞(股票跌)且通胀高企(债券跌)时，黄金的实物属性和抗通胀属性使其成为唯一亮点。<br><span class='product-tag'>💡 储备产品：【黄金】京东积存金、【基金】国泰黄金ETF等</span>" },
+        'QDII': { t: "美股QDII (滞胀期对冲)", d: "【逻辑】中美经济周期往往错位。当中国处于滞胀期，利用QDII配置美股可分散国别风险，且美元通常在危机时刻升值。<br><span class='product-tag'>💡 储备产品：【基金】广发纳斯达克指数等</span>" },
+        'CashStag': { t: "货币基金 (现金为王)", d: "【逻辑】滞胀期各类资产普跌（股债双杀），此时本金安全最重要，货币基金收益虽低但绝不亏损。<br><span class='product-tag'>💡 储备产品：【基金】长城货币基金、【小金库】京东小金库等</span>" },
+        'Consumer': { t: "必需消费 (防御)", d: "【逻辑】经济再差，老百姓也要吃饭吃药。食品饮料、医药等板块业绩确定性高，抗跌属性强。<br><span class='product-tag'>💡 储备产品：【基金】汇添富中证主要消费ETF【证券】消费ETF等<</span>" },
+
+        'Bond': { t: "30年国债 (衰退期进攻)", d: "【逻辑】衰退期央行大幅降息救市，利率下行。长久期债券对利率最敏感，资本利得极其丰厚（债券大牛市）。<br><span class='product-tag'>💡 储备产品：【基金】上银债券指数5-10、中银国企信用债等</span>" },
+        'Div': { t: "红利低波 (股市底仓)", d: "【逻辑】在衰退期，成长股熄火，资金抱团高股息资产（如银行、水电），获取确定的分红收益。<br><span class='product-tag'>💡 储备产品：【基金】南方中证红利低波、华夏稳享增利六个月【证券】红利ETF等<等</span>" },
+        'ShortBond': { t: "中短债", d: "【逻辑】如果不想承担长债的波动风险，中短债提供了比货币基金更高的收益，且非常稳健。<br><span class='product-tag'>💡 储备产品：【基金】兴全恒悦30天、兴业稳健30天等</span>" }
+    };
+
+    function showDetail(key) {
+        const box = document.getElementById('detail-box');
+        const data = details[key];
+        
+        document.getElementById('d-title').innerText = data.t;
+        document.getElementById('d-desc').innerHTML = data.d; // 使用innerHTML以支持HTML标签
+        
+        // 设置边框颜色以匹配类型
+        if (key === 'Cash') {
+            box.style.borderLeftColor = '#ff9800';
+        } else {
+            box.style.borderLeftColor = '#333';
+        }
+
+        box.style.display = 'block';
+        box.style.animation = 'none';
+        box.offsetHeight; /* 触发重绘 */
+        box.style.animation = 'fadeIn 0.3s';
+    }
+</script>
+
+</body>
+</html>
