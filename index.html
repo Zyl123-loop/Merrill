@@ -191,8 +191,8 @@
                   stroke="var(--c-inflation)" stroke-width="3" fill="none" stroke-dasharray="8,4" />
 
             <!-- 文字标注曲线含义 -->
-            <text x="90" y="480" fill="var(--c-growth)" font-weight="bold" font-size="14">流动性紧张</text>
-            <text x="340" y="480" fill="var(--c-growth)" font-weight="bold" font-size="14">流动性宽松</text>
+            <text x="90" y="480" fill="var(--c-growth)" font-weight="bold" font-size="14">流动性宽松</text>
+            <text x="340" y="480" fill="var(--c-growth)" font-weight="bold" font-size="14">流动性紧张</text>
             <text x="590" y="480" fill="var(--c-growth)" font-weight="bold" font-size="14">流动性紧张</text>
             <text x="840" y="480" fill="var(--c-growth)" font-weight="bold" font-size="14">流动性宽松</text>
             <text x="600" y="90" fill="var(--c-inflation)" font-weight="bold" font-size="14">经济环境（向好-向坏）</text>
@@ -251,8 +251,7 @@
     </div>
 
     <div class="legend">
-        <div class="legend-item"><div class="dot" style="background:var(--c-growth)"></div> GDP增长率</div>
-        <div class="legend-item"><div class="dot" style="background:var(--c-inflation)"></div> CPI通胀率</div>
+        <div class="legend-item"><div class="dot" style="background:var(--c-inflation)"></div> 经济环境</div>
         <span style="color:#ccc">|</span>
         <div class="legend-item" style="color:#666">👆 点击图表上的卡片查看策略</div>
     </div>
@@ -272,16 +271,16 @@
         
         'Commodity': { t: "防御型大宗商品（经济果日、政策降温、资金成本上升）", d: "【逻辑】农产品期货通胀环境下具有保值功能，需求相对刚性。<br><span class='product-tag'>💡 代表产品：【期货】农产品商品期货</span>" },
         'Metal': { t: "高股息红利/必须消费（经济果日、政策降温、资金成本上升）", d: "【逻辑】价值风格占优，现金流稳定抵御利率上行压力。<br><span class='product-tag'>💡 代表产品：【证券】红利ETF【基金】南方中证红利地波</span>" },
-        'Cash': { t: "防守型现金/短债（经济果日、政策降温、资金成本上升）", d: "【逻辑】流动性收紧环境下，短久期资产受利率冲击小。<br><span class='product-tag'>💡 储备产品：【基金】天弘同业存单、易方达超短债等【理财保险】京东小金保</span>" },
+        'Cash': { t: "防守型现金/短债（经济果日、政策降温、资金成本上升）", d: "【逻辑】流动性收紧环境下，短久期资产受利率冲击小。<br><span class='product-tag'>💡 代表产品：【基金】天弘同业存单、易方达超短债等【理财保险】京东小金保</span>" },
 
-        'Gold': { t: "短债基金（增长放缓、信用环境调整、避险情绪为主）", d: "【逻辑】避险首选现金类产品，保持流动性等待机会。<br><span class='product-tag'>💡 储备产品：【基金】易方达超短债等【理财保险】京东小金保</span>" },
-        'QDII': { t: "同存基金（增长放缓、信用环境调整、避险情绪为主）", d: "【逻辑】利率下行预期推动债券价格上涨，信用风险可控。<br><span class='product-tag'>💡 储备产品：【基金】天弘同业存单</span>" },
-        'CashStag': { t: "货币基金（增长放缓、信用环境调整、避险情绪为主）", d: "【逻辑】避险首选现金类产品，保持流动性等待机会。<br><span class='product-tag'>💡 储备产品：【基金】长城货币基金、【小金库】京东小金库等</span>" },
-        'Consumer': { t: "黄金（增长放缓、信用环境调整、避险情绪为主）", d: "【逻辑】避险属性凸显，黄金对冲尾部风险。<br><span class='product-tag'>💡 储备产品：【黄金】京东积存金【证券】国泰黄金ETF</span>" },
+        'Gold': { t: "短债基金（增长放缓、信用环境调整、避险情绪为主）", d: "【逻辑】避险首选现金类产品，保持流动性等待机会。<br><span class='product-tag'>💡 代表产品：【基金】易方达超短债等【理财保险】京东小金保</span>" },
+        'QDII': { t: "同存基金（增长放缓、信用环境调整、避险情绪为主）", d: "【逻辑】利率下行预期推动债券价格上涨，信用风险可控。<br><span class='product-tag'>💡 代表产品：【基金】天弘同业存单</span>" },
+        'CashStag': { t: "货币基金（增长放缓、信用环境调整、避险情绪为主）", d: "【逻辑】避险首选现金类产品，保持流动性等待机会。<br><span class='product-tag'>💡 代表产品：【基金】长城货币基金、【小金库】京东小金库等</span>" },
+        'Consumer': { t: "黄金（增长放缓、信用环境调整、避险情绪为主）", d: "【逻辑】避险属性凸显，黄金对冲尾部风险。<br><span class='product-tag'>💡 代表产品：【黄金】京东积存金【证券】国泰黄金ETF</span>" },
 
-        'Bond': { t: "长期国债（政策托底经济、市场磨底）", d: "【逻辑】货币政策宽松推动无风险利率下行，中长期利率债最具配置价值。<br><span class='product-tag'>💡 储备产品：【基金】上银债券指数5-10、中银国企信用债等</span>" },
-        'Div': { t: "宽基权益（政策托底经济、市场磨底）", d: "【逻辑】权益定投：市场估值处于历史低位，通过定投宽基指数平滑成本，积累优质筹码。<br><span class='product-tag'>💡 储备产品：【基金】上证50、沪深300【证券】上证50、沪深300</span>" },
-        'ShortBond': { t: "信用债（政策托底经济、市场磨底）", d: "【逻辑】高等级信用债：信用利差处于相对高位，优选财务稳健的龙头企业。<br><span class='product-tag'>💡 储备产品：【基金】中银高等级信用债、上银90天债券</span>" }
+        'Bond': { t: "长期国债（政策托底经济、市场磨底）", d: "【逻辑】货币政策宽松推动无风险利率下行，中长期利率债最具配置价值。<br><span class='product-tag'>💡 代表产品：【基金】上银债券指数5-10、中银国企信用债等</span>" },
+        'Div': { t: "宽基权益（政策托底经济、市场磨底）", d: "【逻辑】权益定投：市场估值处于历史低位，通过定投宽基指数平滑成本，积累优质筹码。<br><span class='product-tag'>💡 代表产品：【基金】上证50、沪深300【证券】上证50、沪深300</span>" },
+        'ShortBond': { t: "信用债（政策托底经济、市场磨底）", d: "【逻辑】高等级信用债：信用利差处于相对高位，优选财务稳健的龙头企业。<br><span class='product-tag'>💡 代表产品：【基金】中银高等级信用债、上银90天债券</span>" }
     };
 
     function showDetail(key) {
